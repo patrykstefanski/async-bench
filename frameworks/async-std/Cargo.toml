@@ -1,0 +1,19 @@
+[package]
+name = "async-std-bench"
+version = "0.1.0"
+edition = "2018"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+
+[dependencies]
+async-std = "1.6"
+
+[[bin]]
+name = "hello"
+path = "src/hello.rs"
+
+[[bin]]
+name = "hello-timeout"
+path = "src/hello_timeout.rs"

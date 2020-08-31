@@ -1,0 +1,3 @@
+[submodule "frameworks/fev/libfev"]
+	path = frameworks/fev/libfev
+	url = https://github.com/patrykstefanski/libfev.git
