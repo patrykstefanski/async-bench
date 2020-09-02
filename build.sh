@@ -36,6 +36,10 @@ cmake --build "$BUILD_DIR/raw-epoll" --config Release
 cmake -S "$SRC_DIR/frameworks/threads" -B "$BUILD_DIR/threads" -DCMAKE_BUILD_TYPE=Release
 cmake --build "$BUILD_DIR/threads" --config Release
 
+# libuv
+cmake -S "$SRC_DIR/frameworks/libuv" -B "$BUILD_DIR/libuv" -DCMAKE_BUILD_TYPE=Release
+cmake --build "$BUILD_DIR/libuv" --config Release
+
 # go
 go build -o "$BUILD_DIR/go/hello" "$SRC_DIR/frameworks/go/hello.go"
 go build -o "$BUILD_DIR/go/hello-timeout" "$SRC_DIR/frameworks/go/hello-timeout.go"

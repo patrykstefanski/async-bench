@@ -1,3 +1,6 @@
 [submodule "frameworks/fev/libfev"]
 	path = frameworks/fev/libfev
 	url = https://github.com/patrykstefanski/libfev.git
+[submodule "frameworks/libuv/libuv"]
+	path = frameworks/libuv/libuv
+	url = https://github.com/libuv/libuv.git
