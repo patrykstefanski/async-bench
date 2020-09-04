@@ -4,7 +4,11 @@ A benchmark of approaches to writing server applications.
 
 ## Frameworks
 
-This benchmark compares 'frameworks' for server applications that:
+The benchmark distinguishes two types of approaches:
+
+### shared
+
+This includes approaches that:
 * can split work across multiple processors
 * can handle non-uniform load (e.g. by having a shared run queue)
 * provide some synchronization primitives between tasks
@@ -17,9 +21,11 @@ This includes:
 * [Tokio](https://tokio.rs/)
 * [async-std](https://async.rs/)
 
-One exception to that is **raw-epoll**. It is a multi-threaded server where each thread has its own epoll instance. A
-listening socket is added to each epoll instance with SO\_REUSEPORT flag, thus the underlying kernel splits the
-connections across the threads, and each connection then is pinned to one thread.
+### prefork
+
+This type uses SO\_REUSEPORT flag and relies on the underlying kernel to split the work across multiple threads. After a
+connection is accepted, it is pinned to one thread and any synchronization is mostly avoided. However, this type does
+not provide any strategy to handle non-uniform load, and thus  underutilization of processors is possible.
 
 ## Benchmarks
 
@@ -50,10 +56,17 @@ Both servers and the benchmarking tool share the available processors on a machi
 
 ### hello
 
+The following command for each framework was used:
+
+```shell script
+./bench-throughput.sh ./FRAMEWORK/hello 127.0.0.1 3000 12 12 64 20000 3 30
+```
+
+#### shared
+
 | framework                               |   reqs/s  |
 |-----------------------------------------|-----------|
 | threads                                 |   930,142 |
-| raw-epoll                               | 1,401,905 |
 | Boost.Asio                              | 1,011,690 |
 | Go                                      | 1,265,821 |
 | Tokio                                   | 1,120,036 |
@@ -71,13 +84,23 @@ Both servers and the benchmarking tool share the available processors on a machi
 | fev-io_uring-work-stealing-bounded-spmc | 1,208,581 |
 | fev-io_uring-work-stealing-locking      | 1,214,600 |
 
+#### prefork
+
+| framework  |   reqs/s  |
+|------------|-----------|
+| raw-epoll  | 1,401,905 |
+| Boost.Asio | 1,335,521 |
+| libuv      | 1,373,606 |
+
+### hello-timeout
+
 The following command for each framework was used:
 
 ```shell script
-./bench-throughput.sh ./FRAMEWORK/hello 127.0.0.1 3000 12 12 64 20000 3 30
+./bench-throughput.sh ./FRAMEWORK/hello-timeout 127.0.0.1 3000 12 12 64 20000 3 30
 ```
 
-### hello-timeout
+#### shared
 
 | framework                               |   reqs/s  |
 |-----------------------------------------|-----------|
@@ -99,11 +122,11 @@ The following command for each framework was used:
 | fev-io_uring-work-stealing-bounded-spmc | 1,079,243 |
 | fev-io_uring-work-stealing-locking      | 1,089,061 |
 
-The following command for each framework was used:
+#### prefork
 
-```shell script
-./bench-throughput.sh ./FRAMEWORK/hello-timeout 127.0.0.1 3000 12 12 64 20000 3 30
-```
+| framework  |   reqs/s  |
+|------------|-----------|
+| Boost.Asio | 1,252,307 |
 
 ## Latency
 
@@ -119,10 +142,17 @@ less time than that value.
 
 ### hello
 
+The following command for each framework was used:
+
+```shell script
+./bench-latency.sh ./FRAMEWORK/hello 127.0.0.1 3000 6 6 64 20000 1000000 3 30
+```
+
+#### shared
+
 | framework                               |  mean  | median |  q0.9   |  q0.99  |  q0.999   |   q0.9999  |
 |-----------------------------------------|--------|--------|---------|---------|-----------|------------|
 | threads                                 | 19,913 | 18,070 |  32,032 |  43,737 |    53,163 |    126,103 |
-| raw-epoll                               | 17,513 | 15,558 |  27,646 |  38,822 |    47,897 |    554,005 |
 | Boost.Asio                              | 21,393 | 19,318 |  32,846 |  49,131 |    86,839 |    338,921 |
 | Go                                      | 18,974 | 17,092 |  29,505 |  43,911 |    59,890 |    209,802 |
 | Tokio                                   | 17,930 | 16,377 |  26,108 |  38,347 |    65,201 |    562,775 |
@@ -140,13 +170,23 @@ less time than that value.
 | fev-io_uring-work-stealing-bounded-spmc | 58,104 | 39,753 | 117,507 | 286,530 |   505,817 |    939,609 |
 | fev-io_uring-work-stealing-locking      | 54,257 | 37,978 | 108,610 | 263,357 |   465,995 |    717,205 |
 
+#### prefork
+
+| framework  |  mean  | median |  q0.9  |  q0.99 | q0.999 | q0.9999 |
+|------------|--------|--------|--------|--------|--------|---------|
+| raw-epoll  | 17,513 | 15,558 | 27,646 | 38,822 | 47,897 | 554,005 |
+| Boost.Asio | 18,063 | 16,092 | 28,258 | 40,000 | 49,434 | 442,801 |
+| libuv      | 18,164 | 16,130 | 28,641 | 40,406 | 49,781 | 508,164 |
+
+### hello-timeout
+
 The following command for each framework was used:
 
 ```shell script
-./bench-latency.sh ./FRAMEWORK/hello 127.0.0.1 3000 6 6 64 20000 1000000 3 30
+./bench-latency.sh ./FRAMEWORK/hello-timeout 127.0.0.1 3000 6 6 64 20000 1000000 3 30
 ```
 
-### hello-timeout
+#### shared
 
 | framework                               |  mean  | median |  q0.9  |  q0.99  |   q0.999  |   q0.9999  |
 |-----------------------------------------|--------|--------|--------|---------|-----------|------------|
@@ -168,11 +208,11 @@ The following command for each framework was used:
 | fev-io_uring-work-stealing-bounded-spmc | 42,962 | 32,455 | 78,650 | 188,493 |   336,021 |    548,401 |
 | fev-io_uring-work-stealing-locking      | 41,850 | 32,067 | 75,920 | 178,941 |   316,551 |    486,942 |
 
-The following command for each framework was used:
+#### prefork
 
-```shell script
-./bench-latency.sh ./FRAMEWORK/hello-timeout 127.0.0.1 3000 6 6 64 20000 1000000 3 30
-```
+| framework  |  mean  | median |  q0.9  |  q0.99 | q0.999 | q0.9999 |
+|------------|--------|--------|--------|--------|--------|---------|
+| Boost.Asio | 18,364 | 16,417 | 28,488 | 40,526 | 50,294 | 444,049 |
 
 ## Environment
 
