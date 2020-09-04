@@ -6,7 +6,7 @@ find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 
-foreach(target hello hello-timeout)
+foreach(target hello hello-timeout hello-prefork hello-timeout-prefork)
   add_executable(${target} ${target}.cpp)
   target_link_libraries(${target} ${Boost_SYSTEM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
   set_property(TARGET ${target} PROPERTY CXX_STANDARD 17)
